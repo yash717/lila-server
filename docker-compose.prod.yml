@@ -1,11 +1,17 @@
 # Production: Nakama only — Postgres is Neon (or any external Postgres).
-# Copy .env.example to .env on the host and set DATABASE_ADDRESS and secrets.
 #
+# Setup:
+#   cp .env.example .env
+#   Set DATABASE_ADDRESS, NAKAMA_SERVER_KEY, NAKAMA_CONSOLE_PASSWORD (and optional NAKAMA_CONSOLE_USERNAME).
+#
+# Run:
 #   docker compose -f docker-compose.prod.yml up -d --build
 #
 # DATABASE_ADDRESS uses Nakama’s form (user:password@host:port/database?params), e.g.:
 #   neondb_owner:YOUR_PASSWORD@ep-xxx-pooler.region.aws.neon.tech:5432/neondb?sslmode=require
 # If migrate fails, try dropping channel_binding from Neon’s URL and keep sslmode=require only.
+#
+# Compose reads `.env` in this directory for variable substitution and passes the same file into the container.
 
 services:
   nakama:
@@ -13,11 +19,13 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    env_file:
+      - .env
     environment:
-      DATABASE_ADDRESS: ${DATABASE_ADDRESS}
-      NAKAMA_SERVER_KEY: ${NAKAMA_SERVER_KEY}
+      DATABASE_ADDRESS: ${DATABASE_ADDRESS:?Set DATABASE_ADDRESS in .env}
+      NAKAMA_SERVER_KEY: ${NAKAMA_SERVER_KEY:?Set NAKAMA_SERVER_KEY in .env}
       NAKAMA_CONSOLE_USERNAME: ${NAKAMA_CONSOLE_USERNAME:-admin}
-      NAKAMA_CONSOLE_PASSWORD: ${NAKAMA_CONSOLE_PASSWORD}
+      NAKAMA_CONSOLE_PASSWORD: ${NAKAMA_CONSOLE_PASSWORD:?Set NAKAMA_CONSOLE_PASSWORD in .env}
     ports:
       - "7349:7349"
       - "7350:7350"

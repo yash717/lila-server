@@ -1,7 +1,16 @@
 #!/usr/bin/env bash
 # End-to-end HTTP checks for Nebula Strike Nakama RPCs (same paths as nebula-strike nakamaClient).
-# Requires: curl, jq, node (for JSON-RPC body encoding), running Nakama on 7350.
+# Requires: curl, jq, node (for JSON-RPC body encoding), running Nakama on 7350 (or nginx on 80).
+# Optional: NAKAMA_HOST, NAKAMA_PORT, NAKAMA_SERVER_KEY — otherwise loads repo .env if present.
 set -euo pipefail
+
+_REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+if [[ -f "${_REPO_ROOT}/.env" ]]; then
+  set -a
+  # shellcheck disable=SC1091
+  source "${_REPO_ROOT}/.env"
+  set +a
+fi
 
 HOST="${NAKAMA_HOST:-127.0.0.1}"
 PORT="${NAKAMA_PORT:-7350}"

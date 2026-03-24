@@ -1,4 +1,4 @@
-.PHONY: build up down up-prod down-prod logs lint fmt format fmt-docker clean verify-apis
+.PHONY: build up down up-prod down-prod logs lint fmt format fmt-docker clean verify-apis verify-apis-nginx
 
 # Go toolchain image (used when `go` is not on PATH)
 GO_VERSION ?= 1.21
@@ -30,6 +30,10 @@ logs:
 # HTTP smoke test: device auth + create_match + get_leaderboard + get_match_history (requires Nakama on 7350)
 verify-apis:
 	./scripts/verify-apis.sh
+
+# Same checks through local nginx :80 -> Nakama (set on hosts that proxy 80 -> 7350)
+verify-apis-nginx:
+	NAKAMA_HOST=127.0.0.1 NAKAMA_PORT=80 ./scripts/verify-apis.sh
 
 # Run golangci-lint (requires golangci-lint installed locally)
 lint:
