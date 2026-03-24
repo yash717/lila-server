@@ -1,0 +1,35 @@
+# golangci-lint configuration for Nebula Strike server
+run:
+  timeout: 3m
+  go: "1.21"
+
+linters:
+  enable:
+    - errcheck       # Check for unchecked errors
+    - govet          # Report suspicious constructs
+    - staticcheck    # Advanced static analysis
+    - unused         # Find unused code
+    - gosimple       # Simplify code
+    - ineffassign    # Detect ineffectual assignments
+    - misspell       # Find misspelled words
+    - gofmt          # Enforce gofmt formatting
+    - goimports      # Enforce goimports formatting
+    - revive         # Fast, extensible linter (replaces golint)
+
+linters-settings:
+  errcheck:
+    check-blank: false
+  govet:
+    check-shadowing: true
+  revive:
+    rules:
+      - name: exported
+        arguments: [{ "disableStutteringCheck": true }]
+  misspell:
+    locale: US
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - errcheck

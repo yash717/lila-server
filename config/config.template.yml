@@ -1,0 +1,17 @@
+name: nebula_strike
+
+logger:
+  level: "INFO"
+
+server:
+  # Used for some server-side checks; HTTP/WebSocket clients use socket.server_key
+  key: "__NAKAMA_SERVER_KEY__"
+
+socket:
+  # Must match the frontend VITE_NAKAMA_SERVER_KEY / Nakama JS Client key
+  server_key: "__NAKAMA_SERVER_KEY__"
+  outgoing_queue_size: 64
+
+console:
+  username: "__NAKAMA_CONSOLE_USERNAME__"
+  password: "__NAKAMA_CONSOLE_PASSWORD__"

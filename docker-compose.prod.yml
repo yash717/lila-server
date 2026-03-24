@@ -1,0 +1,25 @@
+# Production: Nakama only — Postgres is Neon (or any external Postgres).
+# Copy .env.example to .env on the host and set DATABASE_ADDRESS and secrets.
+#
+#   docker compose -f docker-compose.prod.yml up -d --build
+#
+# DATABASE_ADDRESS uses Nakama’s form (user:password@host:port/database?params), e.g.:
+#   neondb_owner:YOUR_PASSWORD@ep-xxx-pooler.region.aws.neon.tech:5432/neondb?sslmode=require
+# If migrate fails, try dropping channel_binding from Neon’s URL and keep sslmode=require only.
+
+services:
+  nakama:
+    container_name: nebula_nakama_prod
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_ADDRESS: ${DATABASE_ADDRESS}
+      NAKAMA_SERVER_KEY: ${NAKAMA_SERVER_KEY}
+      NAKAMA_CONSOLE_USERNAME: ${NAKAMA_CONSOLE_USERNAME:-admin}
+      NAKAMA_CONSOLE_PASSWORD: ${NAKAMA_CONSOLE_PASSWORD}
+    ports:
+      - "7349:7349"
+      - "7350:7350"
+      - "7351:7351"
+    restart: unless-stopped
