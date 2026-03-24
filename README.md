@@ -25,8 +25,10 @@ Configuration at runtime comes from **environment variables** only. The image re
    # or: docker compose -f docker-compose.prod.yml up -d --build
    ```
 
-5. Open firewall / security group for **7350** (client HTTP + WebSocket) and optionally **7351** (console; restrict by IP in production).
-6. Point the **nebula-strike** build at the same host and **`VITE_NAKAMA_SERVER_KEY`** as `NAKAMA_SERVER_KEY`.
+5. Open the **AWS security group** for TCP **80** (if nginx proxies to Nakama), **7350** (direct Nakama), and **7351** (console; restrict by IP in production).
+6. Point the **nebula-strike** build at the same host, port, and **`VITE_NAKAMA_SERVER_KEY`** as `NAKAMA_SERVER_KEY` (if nginx serves Nakama on port 80, use `VITE_NAKAMA_PORT=80`).
+
+**EC2 bootstrap:** `deploy/ec2-server-setup.sh` (Amazon Linux 2023) installs git, Docker, Docker Compose v2, nginx (`:80` → `127.0.0.1:7350`), clones `yash717/lila-server`, and creates `~/lila-server/.env` if missing. Set **`DATABASE_ADDRESS`** for Neon, then run `sudo docker compose -f docker-compose.prod.yml up -d --build` in `~/lila-server`.
 
 **Security:** If any database URL or password was ever pasted into chat or committed, **rotate the Neon password** and keys immediately.
 
