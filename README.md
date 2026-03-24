@@ -30,6 +30,8 @@ Configuration at runtime comes from **environment variables** only. The image re
 
 **EC2 bootstrap:** `deploy/ec2-server-setup.sh` (Amazon Linux 2023) installs git, Docker, Docker Compose v2, nginx (`:80` → `127.0.0.1:7350`), clones `yash717/lila-server`, and creates `~/lila-server/.env` if missing. Set **`DATABASE_ADDRESS`** for Neon, then run `sudo docker compose -f docker-compose.prod.yml up -d --build` in `~/lila-server`.
 
+**Nginx in front of Nakama:** Do not set `Connection: upgrade` for every request — that breaks Nakama’s HTTP/RPC (auth, REST). The bootstrap script uses `map $http_upgrade $connection_upgrade` and `proxy_set_header Connection $connection_upgrade`. If you deployed an older nginx config, run **`bash scripts/patch-nginx-nakama.sh`** on the server (from `~/lila-server` after `git pull`).
+
 **Security:** If any database URL or password was ever pasted into chat or committed, **rotate the Neon password** and keys immediately.
 
 ## Architecture
