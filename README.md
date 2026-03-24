@@ -138,12 +138,18 @@ This directory is intended to be the root of the **`lila-server`** repository. T
 
 ### End-to-end HTTP check
 
-With Nakama listening on `7350` (e.g. after `docker compose up -d`):
+With Nakama listening on `7350` (e.g. after `docker compose up -d`), or after **`docker compose -f docker-compose.prod.yml up -d`** with a project **`.env`** (the script loads `.env` for `NAKAMA_SERVER_KEY` if unset):
 
 ```bash
 make verify-apis
 # or
 ./scripts/verify-apis.sh
+```
+
+If nginx proxies **port 80** to Nakama (as in `deploy/ec2-server-setup.sh`):
+
+```bash
+make verify-apis-nginx
 ```
 
 This exercises `/v2/account/authenticate/device` and all three RPCs with the same encoding as `@heroiclabs/nakama-js` (double JSON-stringified payload body).
