@@ -57,6 +57,11 @@ func InitModule(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runti
 		return err
 	}
 
+	if err := initializer.RegisterRpc("health_check", rpc.HealthCheckRPC); err != nil {
+		logger.Error("Failed to register health_check RPC: %v", err)
+		return err
+	}
+
 	logger.Info("Nebula Strike server initialized successfully")
 	return nil
 }
