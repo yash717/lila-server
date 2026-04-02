@@ -126,7 +126,7 @@ func (h *Handler) MatchJoin(ctx context.Context, logger runtime.Logger, db *sql.
 			"mode": gs.Mode,
 			"open": false,
 		})
-		dispatcher.MatchLabelUpdate(string(label))
+		_ = dispatcher.MatchLabelUpdate(string(label))
 
 		logger.Info("Game started — mode: %s", gs.Mode)
 	}
@@ -162,7 +162,7 @@ func (h *Handler) MatchLeave(ctx context.Context, logger runtime.Logger, db *sql
 					}
 
 					data, _ := json.Marshal(result)
-					dispatcher.BroadcastMessage(OpCodeGameOver, data, nil, nil, true)
+					_ = dispatcher.BroadcastMessage(OpCodeGameOver, data, nil, nil, true)
 					updateLeaderboard(ctx, nk, logger, uid, leavingUID)
 					RecordMatchFinished(ctx, nk, logger, gs, uid, leavingUID, false)
 					break
@@ -222,7 +222,7 @@ func (h *Handler) MatchLoop(ctx context.Context, logger runtime.Logger, db *sql.
 				}
 
 				data, _ := json.Marshal(result)
-				dispatcher.BroadcastMessage(OpCodeGameOver, data, nil, nil, true)
+				_ = dispatcher.BroadcastMessage(OpCodeGameOver, data, nil, nil, true)
 				updateLeaderboard(ctx, nk, logger, winnerUID, timedOutUID)
 				RecordMatchFinished(ctx, nk, logger, gs, winnerUID, timedOutUID, false)
 				return gs
@@ -288,7 +288,7 @@ func (h *Handler) MatchLoop(ctx context.Context, logger runtime.Logger, db *sql.
 			}
 
 			data, _ := json.Marshal(result)
-			dispatcher.BroadcastMessage(OpCodeGameOver, data, nil, nil, true)
+			_ = dispatcher.BroadcastMessage(OpCodeGameOver, data, nil, nil, true)
 			broadcastState(dispatcher, gs)
 			updateLeaderboard(ctx, nk, logger, winnerUID, loserUID)
 			RecordMatchFinished(ctx, nk, logger, gs, winnerUID, loserUID, false)
@@ -310,12 +310,12 @@ func (h *Handler) MatchLoop(ctx context.Context, logger runtime.Logger, db *sql.
 			}
 
 			data, _ := json.Marshal(result)
-			dispatcher.BroadcastMessage(OpCodeGameOver, data, nil, nil, true)
+			_ = dispatcher.BroadcastMessage(OpCodeGameOver, data, nil, nil, true)
 			broadcastState(dispatcher, gs)
 
 			// Participation points for both
 			for uid, pi := range gs.Players {
-				nk.LeaderboardRecordWrite(ctx, leaderboardID, uid, pi.Username, 1, 0, nil, nil)
+				_, _ = nk.LeaderboardRecordWrite(ctx, leaderboardID, uid, pi.Username, 1, 0, nil, nil)
 			}
 			RecordMatchFinished(ctx, nk, logger, gs, "", "", true)
 			return gs
@@ -368,7 +368,7 @@ func broadcastState(dispatcher runtime.MatchDispatcher, gs *State) {
 	}
 
 	data, _ := json.Marshal(payload)
-	dispatcher.BroadcastMessage(OpCodeStateUpdate, data, nil, nil, true)
+	_ = dispatcher.BroadcastMessage(OpCodeStateUpdate, data, nil, nil, true)
 }
 
 func accountDisplayName(ctx context.Context, nk runtime.NakamaModule, userID string) string {
