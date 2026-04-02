@@ -24,7 +24,7 @@ linters-settings:
   revive:
     rules:
       - name: exported
-        arguments: [{ "disableStutteringCheck": true }]
+        disabled: false
   misspell:
     locale: US
 
