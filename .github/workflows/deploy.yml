@@ -1,0 +1,47 @@
+name: Server Deploy
+
+on:
+  push:
+    branches: [main]
+
+  # Allow manual trigger from Actions tab
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+    # Only deploy if CI passes (same commit)
+    needs: []
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script_stop: true
+          script: |
+            set -e
+
+            echo "=== Pulling latest code ==="
+            cd ~/lila-server
+            git pull --ff-only
+
+            echo "=== Rebuilding containers ==="
+            docker compose -f docker-compose.prod.yml up -d --build
+
+            echo "=== Waiting for Nakama to be ready ==="
+            for i in $(seq 1 30); do
+              if curl -sf http://127.0.0.1:7350/healthcheck > /dev/null 2>&1; then
+                echo "✅ Nakama is healthy"
+                exit 0
+              fi
+              echo "Waiting... ($i/30)"
+              sleep 2
+            done
+
+            echo "❌ Nakama failed to become healthy within 60s"
+            docker compose -f docker-compose.prod.yml logs --tail=50 nakama
+            exit 1

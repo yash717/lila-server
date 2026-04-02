@@ -1,0 +1,50 @@
+name: Server CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-build:
+    name: Lint & Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.21"
+          cache: true
+
+      - name: Download modules
+        run: go mod download
+
+      - name: Check formatting
+        run: |
+          UNFORMATTED=$(gofmt -l .)
+          if [ -n "$UNFORMATTED" ]; then
+            echo "❌ The following files are not formatted:"
+            echo "$UNFORMATTED"
+            exit 1
+          fi
+          echo "✅ All files are properly formatted"
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: v1.55
+          args: --timeout=3m
+
+      - name: Build plugin
+        run: go build -buildmode=plugin -trimpath -o nebula_server.so
+
+      - name: Docker build
+        run: docker build -t nebula-server:ci .
