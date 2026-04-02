@@ -150,7 +150,7 @@ func GetLeaderboardRPC(ctx context.Context, logger runtime.Logger, db *sql.DB, n
 // HealthCheckRPC handles the "health_check" RPC call.
 func HealthCheckRPC(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runtime.NakamaModule, payload string) (string, error) {
 	resp := map[string]string{
-		"status": "ok",
+		"status":  "ok",
 		"message": "CI/CD implemented",
 	}
 	data, _ := json.Marshal(resp)

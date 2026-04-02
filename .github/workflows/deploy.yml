@@ -11,6 +11,8 @@ jobs:
   deploy:
     name: Deploy to EC2
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     # Only deploy if CI passes (same commit)
     needs: []
 
