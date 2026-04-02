@@ -4,9 +4,7 @@
 services:
   nakama:
     container_name: nebula_nakama_prod
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ghcr.io/yash717/lila-server:${IMAGE_TAG:-latest}
     env_file:
       - .env
     ports:

@@ -27,23 +27,50 @@ jobs:
           script: |
             set -e
 
+            echo "=== Logging into GHCR ==="
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
             echo "=== Pulling latest code ==="
             cd ~/lila-server
-            git pull --ff-only
+            git fetch origin main
+            git reset --hard origin/main
+            
+            # Use docker to query the running container for its image, so we can rollback if needed
+            PREV_IMAGE=$(docker inspect --format='{{.Config.Image}}' nebula_nakama_prod 2>/dev/null || echo "ghcr.io/yash717/lila-server:latest")
+            # Extract just the tag
+            PREV_TAG=${PREV_IMAGE##*:}
 
-            echo "=== Rebuilding containers ==="
-            docker compose -f docker-compose.prod.yml up -d --build
+            export IMAGE_TAG=${{ github.sha }}
 
-            echo "=== Waiting for Nakama to be ready ==="
-            for i in $(seq 1 30); do
+            echo "=== Pulling Image ($IMAGE_TAG) ==="
+            docker compose -f docker-compose.prod.yml pull
+
+            echo "=== Deploying ==="
+            docker compose -f docker-compose.prod.yml up -d
+
+            echo "=== Health Check (60s wait) ==="
+            RETRY=0
+            HEALTHY=false
+            while [ $RETRY -lt 15 ]; do
               if curl -sf http://127.0.0.1:7350/healthcheck > /dev/null 2>&1; then
-                echo "✅ Nakama is healthy"
-                exit 0
+                HEALTHY=true
+                break
               fi
-              echo "Waiting... ($i/30)"
-              sleep 2
+              echo "Waiting... ($RETRY/15)"
+              sleep 4
+              RETRY=$((RETRY+1))
             done
 
-            echo "❌ Nakama failed to become healthy within 60s"
-            docker compose -f docker-compose.prod.yml logs --tail=50 nakama
-            exit 1
+            if [ "$HEALTHY" = true ]; then
+              echo "✅ Nakama is healthy! Deploy successful."
+            else
+              echo "❌ Nakama failed health check! Triggering ROLLBACK."
+              docker compose -f docker-compose.prod.yml logs --tail=50 nakama
+              
+              echo "=== Rolling Back to $PREV_TAG ==="
+              export IMAGE_TAG=$PREV_TAG
+              docker compose -f docker-compose.prod.yml up -d
+              
+              echo "✅ Rollback applied. Exiting with failure."
+              exit 1
+            fi
